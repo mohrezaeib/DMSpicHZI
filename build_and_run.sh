@@ -4,9 +4,10 @@ set -e  # Exit on any error
 
 # ---- 1. Create directory structure ----
 echo "Creating project structure..."
-mkdir -p docker data
-touch Dockerfile docker/install_packages.R docker-compose.yml
-
+mkdir -p data
+mkdir -p ./shiny_logs/msmatch
+mkdir -p ./shiny_logs/table_explorer
+mkdir -p ./shiny_logs/dimspec_qc
 # ---- 2. Build Docker image ----
 IMAGE_NAME="nist/dimspec:latest"
 echo "Building Docker image: $IMAGE_NAME"
@@ -24,11 +25,26 @@ fi
 
 # Run new container
 echo "Running container: $CONTAINER_NAME"
+
 docker run -d --name $CONTAINER_NAME \
-  -p 3838:3838 -p 8000:8000 \
+  -p 3838:3838 \
+  -p 7000:7000 \
+  -p 7001:7001 \
+  -p 7002:7002 \
+  -p 8000:8000 \
   -v "$(pwd)/data:/opt/DIMSpec/db" \
   $IMAGE_NAME
-
-echo "✅ DIMSpec container is up and running."
-echo "   Shiny apps  → http://localhost:3838"
-echo "   Plumber API → http://localhost:8000/__docs__"
+# Automatically detect server's external IP address (first non-loopback)
+SERVER_IP=$(hostname -I | awk '{print $1}')
+echo ""
+echo "✅ DIMSpec container is up and running at: http://$SERVER_IP"
+echo ""
+echo "🌐 Available Shiny Apps:"
+echo "   🟢 msMatch         → http://$SERVER_IP:7000"
+echo "   🟢 table_explorer  → http://$SERVER_IP:7001"
+echo "   🟢 dimspec-qc      → http://$SERVER_IP:7002"
+echo ""
+echo "📊 Main Shiny app     → http://$SERVER_IP:3838"
+echo "🔧 Plumber API        → http://$SERVER_IP:8000/__docs__"
+echo ""
+echo "📂 Mounted volume     → ./data → /opt/DIMSpec/db"

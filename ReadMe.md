@@ -1,8 +1,4 @@
-Sure! Here's the **raw Markdown** content for your `README.md`:
 
----
-
-```markdown
 # Docker-izing DIMSpec
 
 This project wraps the full DIMSpec environment—including R, Miniconda, RDKit, SQLite, Shiny apps, and a Plumber API—inside a single Docker container for **portable, reproducible installation**.
@@ -14,7 +10,11 @@ This project wraps the full DIMSpec environment—including R, Miniconda, RDKit,
 - SQLite CLI + libraries
 - Automatically starts:
   - Plumber API (port `8000`)
-  - All 3 DIMSpec Shiny apps (port `3838`)
+  - DIMSpec Shiny apps:
+    - msMatch (port `7000`)
+    - table_explorer (port `7001`)
+    - dimspec-qc (port `7002`)
+    - (optional default app at port `3838`)
 - Works on Linux, macOS, Windows (with Docker)
 - No local R/Python setup needed
 
@@ -28,9 +28,11 @@ This project wraps the full DIMSpec environment—including R, Miniconda, RDKit,
 ├── Dockerfile                  # Main image build instructions
 ├── docker/
 │   └── install\_packages.R      # Pre-install required R packages
-├── docker-compose.yml          # Optional compose setup
+├── docker-compose.yml          # Docker Compose setup (multi-port)
 ├── build\_and\_run.sh            # Build & run helper script
-└── data/                       # Persistent SQLite DB mount
+├── entry.sh                    # Startup script (Shiny apps + API)
+├── data/                       # Persistent SQLite DB mount
+└── env\_glob.txt                # DIMSpec global config (readonly)
 
 ````
 
@@ -54,10 +56,13 @@ This will:
 * Start a container named `dimspec`
 * Expose required ports and mount `./data/` to persist the database
 
-### 3. Access the interfaces
+### 3. Access the interfaces (replace IP if on a remote server)
 
-* **Shiny apps**: [http://localhost:3838](http://localhost:3838)
-* **Plumber API (Swagger UI)**: [http://localhost:8000/**docs**](http://localhost:8000/__docs__)
+* **msMatch Shiny app**: [http://localhost:7000](http://localhost:7000)
+* **table\_explorer Shiny app**: [http://localhost:7001](http://localhost:7001)
+* **dimspec-qc Shiny app**: [http://localhost:7002](http://localhost:7002)
+* **Main Shiny app**: [http://localhost:3838](http://localhost:3838)
+* **Plumber API (Swagger UI)**: [http://localhost:8000/\_\_docs](http://localhost:8000/__docs)\_\_
 
 ---
 
@@ -68,6 +73,7 @@ If you want to use your own `env_glob.txt` configuration:
 ```bash
 docker run -d --name dimspec \
   -p 3838:3838 -p 8000:8000 \
+  -p 7000:7000 -p 7001:7001 -p 7002:7002 \
   -v $(pwd)/env_glob.txt:/opt/DIMSpec/config/env_glob.txt:ro \
   -v $(pwd)/data:/opt/DIMSpec/db \
   nist/dimspec:latest
@@ -77,15 +83,15 @@ You can mount other files (e.g., custom R scripts) the same way or bake them int
 
 ---
 
-## 🐳 Using Docker Compose (optional)
+## 🐳 Using Docker Compose
 
-If you prefer `docker-compose`, you can launch with:
+If you prefer `docker-compose`, launch with:
 
 ```bash
 docker compose up -d
 ```
 
-Make sure `docker-compose.yml` exists:
+Make sure your `docker-compose.yml` contains:
 
 ```yaml
 version: "3.9"
@@ -95,19 +101,23 @@ services:
     container_name: dimspec
     ports:
       - "3838:3838"
+      - "7000:7000"
+      - "7001:7001"
+      - "7002:7002"
       - "8000:8000"
     volumes:
       - ./data:/opt/DIMSpec/db
       - ./env_glob.txt:/opt/DIMSpec/config/env_glob.txt:ro
+    restart: unless-stopped
 ```
 
 ---
 
 ## 🧪 Troubleshooting
 
-* **First start takes longer**: The compliance script starts all services and caches packages.
-* **Interactive R console**: Run `docker exec -it dimspec R`.
-* **Conda / RDKit issues**: Ensure `/opt/conda/bin` is first in `PATH` (image does this).
+* **First start takes longer**: DIMSpec may cache packages or run compliance scripts
+* **Interactive R console**: Run `docker exec -it dimspec R`
+* **Conda / RDKit issues**: Ensure `/opt/conda/bin` is first in `PATH` (image does this)
 * **Rebuild with cache cleared**:
 
   ```bash
@@ -123,13 +133,7 @@ This setup gives you a **fully reproducible, isolated DIMSpec environment** with
 * No installation pollution
 * Docker-based portability
 * Persistent SQLite data on the host
-* Identical ports and workflow to the official Quick-Guide
+* Multi-Shiny and API interface access across defined ports
+* Identical workflow to the official DIMSpec Quick-Guide
 
-You're now ready to develop with DIMSpec exactly as intended!
 
-```
-
----
-
-Would you like me to create and send you the actual `.md` file to download?
-```
