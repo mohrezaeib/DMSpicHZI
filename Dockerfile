@@ -32,8 +32,6 @@
             https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
      && bash /tmp/miniconda.sh -b -p "$CONDA_DIR" \
      && rm /tmp/miniconda.sh \
-    #  && "$CONDA_DIR/bin/conda" install -y -c conda-forge python=3.10 rdkit \
-    #  && /opt/conda/bin/conda install -y -c conda-forge libgcc-ng libstdcxx-ng \
      && /opt/conda/bin/conda clean -afy
     
     # R packages
@@ -53,9 +51,6 @@
     WORKDIR /opt/DIMSpec       
     COPY env_glob.txt /opt/DIMSpec/config/env_glob.txt
 
-
-    #
-    
     #depthPre-cache R packages
 
 

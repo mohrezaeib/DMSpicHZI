@@ -4,10 +4,9 @@ set -e  # Exit on any error
 
 # ---- 1. Create directory structure ----
 echo "Creating project structure..."
-mkdir -p data
-mkdir -p ./shiny_logs/msmatch
-mkdir -p ./shiny_logs/table_explorer
-mkdir -p ./shiny_logs/dimspec_qc
+mkdir -p ./data
+mkdir -p ./shiny_logs
+
 # ---- 2. Build Docker image ----
 IMAGE_NAME="nist/dimspec:latest"
 echo "Building Docker image: $IMAGE_NAME"
@@ -33,6 +32,7 @@ docker run -d --name $CONTAINER_NAME \
   -p 7002:7002 \
   -p 8000:8000 \
   -v "$(pwd)/data:/opt/DIMSpec/db" \
+  -v "$(pwd)/shiny_logs:/var/log/shinyapps" \
   $IMAGE_NAME
 # Automatically detect server's external IP address (first non-loopback)
 SERVER_IP=$(hostname -I | awk '{print $1}')
