@@ -1,0 +1,11 @@
+version: "3.9"
+services:
+  dimspec:
+    build: .
+    container_name: dimspec
+    ports:
+      - "3838:3838"
+      - "8000:8000"
+    volumes:
+      - ./data:/opt/DIMSpec/db
+      - ./env_glob.txt:/opt/DIMSpec/config/env_glob.txt:ro
