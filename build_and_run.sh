@@ -8,7 +8,7 @@ mkdir -p ./data
 mkdir -p ./shiny_logs
 
 # ---- 2. Build Docker image ----
-IMAGE_NAME="nist/dimspec:latest"
+IMAGE_NAME="mohrezaeib/dimspec:latest"
 echo "Building Docker image: $IMAGE_NAME"
 docker build -t $IMAGE_NAME .
 
@@ -31,6 +31,7 @@ docker run -d --name $CONTAINER_NAME \
   -p 7001:7001 \
   -p 7002:7002 \
   -p 8000:8000 \
+  -p 8080:8080 \
   -v "$(pwd)/data:/opt/DIMSpec/db" \
   -v "$(pwd)/shiny_logs:/var/log/shinyapps" \
   $IMAGE_NAME
